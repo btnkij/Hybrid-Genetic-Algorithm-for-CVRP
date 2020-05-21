@@ -1,11 +1,19 @@
-﻿# CMakeList.txt : CMake project for VehicleRouting, include source and define
-# project specific logic here.
-#
+﻿
 cmake_minimum_required (VERSION 3.8)
 
 project ("VehicleRouting")
 
-# Add source to this project's executable.
-add_executable (VehicleRouting  "ga.h"  "ga.cpp" "runner.cpp" "thread_pool.h" "problem.h" "problem.cpp" "util.h"  "cws.h" "loss_metrics.h" "genetic_coding.h" "cws.cpp")
+set(SRC "${CMAKE_SOURCE_DIR}/src")
 
-# TODO: Add tests and install targets if needed.
+add_executable (VehicleRouting  
+"${SRC}/ga.h"  
+"${SRC}/ga.cpp" 
+"${SRC}/runner.cpp" 
+"${SRC}/thread_pool.h" 
+"${SRC}/problem.h" 
+"${SRC}/problem.cpp" 
+"${SRC}/util.h"  
+"${SRC}/cws.h" 
+"${SRC}/loss_metrics.h" 
+"${SRC}/genetic_coding.h" 
+"${SRC}/cws.cpp")
