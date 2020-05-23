@@ -41,7 +41,8 @@ namespace VRP
 		{
 			double norms = this->dist / Vehicle::speed;
 			double normt = this->time * nVeh;
-			double norml = (1. - this->LoadFactor()) * Vehicle::workTime * nVeh;
+			double norml = (1. - this->LoadFactor()) * nVeh;
+			if (Vehicle::workTime > 0)norml *= Vehicle::workTime;
 			double gcost = norms * problem.distancePrior + normt * problem.timePrior + norml * problem.loadPrior;
 			return std::make_pair(this->penalty, gcost);
 		}

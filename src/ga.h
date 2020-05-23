@@ -42,17 +42,21 @@ namespace VRP
 	//	return vehs;
 	//}
 
-	Genome ReinsertRoute(const Genome genome);
+	void ReinsertRoute(Genome& genome);
 
-	Genome SwapRoute(const Genome& genome);
+	void SwapRoute(Genome& genome);
 
-	Genome RotateRoute(const Genome& genome);
+	void RotateRoute(Genome& genome);
 
-	Genome ReverseRoute(const Genome& genome);
+	void ReverseRoute(Genome& genome);
 
-	Genome RemoveVehicle(const Genome& genome);
+	void RemoveVehicle(Genome& genome);
 
-	//Genome AddVehicle(const Genome& genome);
+	void InsertVehicle(Genome& genome);
+
+	Genome MutateRoute(const Genome& genome);
+
+	Genome MutateVehicle(const Genome& genome);
 
 	struct Population
 	{

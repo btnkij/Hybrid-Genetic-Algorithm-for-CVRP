@@ -251,7 +251,27 @@ function load_cvrp(path) {
 function main() {
 	// var problem = load_test();
 	var problem = load_cvrp("D:\\wkdir\\vrp\\benchmark\\M\\M-n200-k16.vrp");
-	solve(problem, 2, 100, 100);
+	// var problem = {
+	// 	"nodes":[
+	// 		{"id":3, "type":"depot"},
+	// 		{"id":5, "type":"customer", "demand":5},
+	// 		{"id":4, "type":"customer", "demand":4},
+	// 	],
+	// 	"edges":[
+	// 		{"u":3,"v":4,"w":2},
+	// 		{"u":3,"v":5,"w":3},
+	// 		{"u":5,"v":4,"w":1},
+	// 	],
+	// 	"speed":1,
+	// 	"vehicles":[
+	// 		{"id":11,"load":5,"mileage":10,"count":1},
+	// 		{"id":12,"load":4,"mileage":10,"count":1},
+	// 	],
+	// 	"distancePrior": 0,
+	// 	"timePrior": 0,
+	// 	"loadPrior": 1
+	// };
+	solve(problem, -1, -1, 200);
 }
 
 main();

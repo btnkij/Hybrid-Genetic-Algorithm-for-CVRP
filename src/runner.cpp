@@ -68,8 +68,11 @@ void init()
 		int u, v;
 		double w;
 		cin >> u >> v >> w; // 连接u、v长度为w的双向道路
-		problem.dis[problem.nodeID[MAXN + u]][problem.nodeID[MAXN + v]] 
-			= problem.dis[problem.nodeID[MAXN + v]][problem.nodeID[MAXN + u]] = w;
+		if (w < problem.dis[problem.nodeID[MAXN + u]][problem.nodeID[MAXN + v]])
+		{
+			problem.dis[problem.nodeID[MAXN + u]][problem.nodeID[MAXN + v]]
+				= problem.dis[problem.nodeID[MAXN + v]][problem.nodeID[MAXN + u]] = w;
+		}
 	}
 	problem.floyd();
 

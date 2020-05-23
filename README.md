@@ -30,7 +30,7 @@ loop
 
 ### Initialize
 
-#### Clark-Wight Saving
+#### Clark-Wright Saving
 
 
 

@@ -266,57 +266,141 @@ namespace VRP
 		return child;
 	}
 
-	Genome RemoveVehicle(const Genome& genome)
+	void ReinsertRoute(Genome& genome)
 	{
-		auto tmp = genome;
-		auto x = std::next(tmp.plan.begin(), randint(0, tmp.plan.size() - 1));
-		std::rotate(tmp.plan.begin(), x, tmp.plan.end());
-		auto it = std::find_if(tmp.plan.begin(), tmp.plan.end(), [](Gene& g) {
-			return g.type == VEHICLE;
+		int cid = randint(0, problem.nCustomer - 1);
+		auto g = std::find_if(genome.plan.begin(), genome.plan.end(), [cid](Gene& g) {
+			return g.type == 0 && g.cid == cid;
 			});
-		tmp.num[it->vtype]--;
-		tmp.plan.erase(it);
-		tmp.Evaluate();
-		return tmp;
+		auto x = std::next(genome.plan.begin(), randint(0, genome.plan.size()));
+		genome.plan.insert(x, *g);
+		genome.plan.erase(g);
+		genome.RemoveSpareVehicles();
+		genome.Evaluate();
 	}
 
-	//Genome AddVehicle(const Genome& genome)
-	//{
-	//	auto tmp = genome;
-	//	int vtype = randint(0, problem.nVehicle - 1);
-	//	if (problem.vehicles[vtype].count == -1 || tmp.num[vtype] < problem.vehicles[vtype].count)
-	//	{
-	//		auto x = std::next(tmp.plan.begin(), randint(0, tmp.plan.size()));
-	//		tmp.num[vtype]++;
-	//		tmp.plan.insert(x, Gene::VehicleGene(vtype));
-	//		tmp.RemoveSpareVehicles();
-	//	}
-	//}
+	void SwapRoute(Genome& genome)
+	{
+		auto p = randpair(0, problem.nCustomer - 1);
+		auto c1 = std::find_if(genome.plan.begin(), genome.plan.end(), [p](Gene& g) {
+			return g.type == 0 && g.cid == p.first;
+			});
+		auto c2 = std::find_if(genome.plan.begin(), genome.plan.end(), [p](Gene& g) {
+			return g.type == 0 && g.cid == p.second;
+			});
+		std::swap(c1->cid, c2->cid);
+		genome.Evaluate();
+	}
+
+	void RotateRoute(Genome& genome)
+	{
+		auto x = std::next(genome.plan.begin(), randint(0, genome.plan.size() - 1));
+		std::rotate(genome.plan.begin(), x, genome.plan.end());
+		auto p = randpair(0, genome.plan.size() - 1);
+		int m = randint(p.first, p.second);
+		x = std::next(genome.plan.begin(), p.first);
+		auto y = std::next(x, m - p.first);
+		auto z = std::next(y, p.second - m);
+		std::rotate(x, y, z);
+		genome.RemoveSpareVehicles();
+		genome.Evaluate();
+	}
+
+	void ReverseRoute(Genome& genome)
+	{
+		auto x = std::next(genome.plan.begin(), randint(0, genome.plan.size() - 1));
+		std::rotate(genome.plan.begin(), x, genome.plan.end());
+		x = genome.plan.begin();
+		auto y = std::next(x, randint(1, genome.plan.size()));
+		std::reverse(x, y);
+		genome.RemoveSpareVehicles();
+		genome.Evaluate();
+	}
+
+	void RemoveVehicle(Genome& genome)
+	{
+		auto x = std::next(genome.plan.begin(), randint(0, genome.plan.size() - 1));
+		std::rotate(genome.plan.begin(), x, genome.plan.end());
+		auto it = std::find_if(genome.plan.begin(), genome.plan.end(), [](Gene& g) {
+			return g.type == VEHICLE;
+			});
+		genome.num[it->vtype]--;
+		genome.plan.erase(it);
+		genome.Evaluate();
+	}
+
+	void InsertVehicle(Genome& genome)
+	{
+		int vtype = randint(0, problem.nVehicle - 1);
+		if (problem.vehicles[vtype].count == -1 || genome.num[vtype] < problem.vehicles[vtype].count)
+		{
+			auto x = std::next(genome.plan.begin(), randint(0, genome.plan.size()));
+			genome.num[vtype]++;
+			genome.plan.insert(x, Gene::VehicleGene(vtype));
+			genome.RemoveSpareVehicles();
+			genome.Evaluate();
+		}
+	}
+
+	void ChangeVehicle(Genome& genome)
+	{
+		auto x = std::next(genome.plan.begin(), randint(0, genome.plan.size() - 1));
+		std::rotate(genome.plan.begin(), x, genome.plan.end());
+		auto it = std::find_if(genome.plan.begin(), genome.plan.end(), [](Gene& g) {
+			return g.type == VEHICLE;
+			});
+		int vtype = randint(0, problem.nVehicle - 1);
+		if (problem.vehicles[vtype].count == -1 || genome.num[vtype] < problem.vehicles[vtype].count)
+		{
+			genome.num[vtype]++;
+			genome.num[it->vtype]--;
+			it->vtype = vtype;
+			genome.Evaluate();
+		}
+	}
 
 	/**
 	* 变异
 	**/
-	Genome MutateVehicle(const Genome& genome)
-	{
-		return RemoveVehicle(genome);
-	}
-
 	Genome MutateRoute(const Genome& genome)
 	{
 		int k = randint(0, 3);
+		auto tmp = genome;
 		switch (k)
 		{
 		case 0:
-			return SwapRoute(genome);
+			SwapRoute(tmp);
+			break;
 		case 1:
-			return RotateRoute(genome);
+			RotateRoute(tmp);
+			break;
 		case 2:
-			return ReverseRoute(genome);
+			ReverseRoute(tmp);
+			break;
 		case 3:
-			return ReinsertRoute(genome);
-		default:
-			assert(0);
+			ReinsertRoute(tmp);
+			break;
 		}
+		return tmp;
+	}
+
+	Genome MutateVehicle(const Genome& genome)
+	{
+		auto tmp = genome;
+		int k = randint(0, 2);
+		switch (k)
+		{
+		case 0:
+			InsertVehicle(tmp);
+			break;
+		case 1:
+			RemoveVehicle(tmp);
+			break;
+		case 2:
+			ChangeVehicle(tmp);
+			break;
+		}
+		return tmp;
 	}
 
 	void Finetune(Genome& genome)
@@ -325,34 +409,31 @@ namespace VRP
 		// re-insert
 		for (int k = 0; k < 3; k++)
 		{
-			auto tmp = ReinsertRoute(genome);
+			auto tmp = genome;
+			ReinsertRoute(tmp);
 			if (tmp < best)best = tmp;
 		}
 		// swap
 		for (int k = 0; k < 3; k++)
 		{
-			auto tmp = SwapRoute(genome);
+			auto tmp = genome;
+			SwapRoute(tmp);
 			if (tmp < best)best = tmp;
 		}
 		// reverse
 		for (int k = 0; k < 3; k++)
 		{
-			auto tmp = ReverseRoute(genome);
+			auto tmp = genome;
+			ReverseRoute(tmp);
 			if (tmp < best)best = tmp;
 		}
 		// change vehicle
-		/*for (int k = 0; k < 3; k++)
+		for (int k = 0; k < 3; k++)
 		{
-			auto tmp = *this;
-			auto x = std::next(tmp.plan.begin(), randint(0, tmp.plan.size() - 1));
-			std::rotate(tmp.plan.begin(), x, tmp.plan.end());
-			auto v = std::find_if(tmp.plan.begin(), tmp.plan.end(), [](Gene& g) {
-				return g.type == 1;
-				});
-			std::rotate(tmp.plan.begin(), v1, tmp.plan.end());
-			tmp.Evaluate();
+			auto tmp = genome;
+			ChangeVehicle(tmp);
 			if (tmp < best)best = tmp;
-		}*/
+		}
 		if (best < genome)
 			genome = best;
 	}
@@ -390,65 +471,6 @@ namespace VRP
 		genome.Evaluate();
 		//genome.Finetune();
 		return genome;
-	}
-
-	Genome ReinsertRoute(const Genome genome)
-	{
-		auto tmp = genome;
-		int cid = randint(0, problem.nCustomer - 1);
-		auto g = std::find_if(tmp.plan.begin(), tmp.plan.end(), [cid](Gene& g) {
-			return g.type == 0 && g.cid == cid;
-			});
-		auto x = std::next(tmp.plan.begin(), randint(0, tmp.plan.size()));
-		tmp.plan.insert(x, *g);
-		tmp.plan.erase(g);
-		tmp.RemoveSpareVehicles();
-		tmp.Evaluate();
-		return tmp;
-	}
-
-	Genome SwapRoute(const Genome& genome)
-	{
-		auto tmp = genome;
-		auto p = randpair(0, problem.nCustomer - 1);
-		auto c1 = std::find_if(tmp.plan.begin(), tmp.plan.end(), [p](Gene& g) {
-			return g.type == 0 && g.cid == p.first;
-			});
-		auto c2 = std::find_if(tmp.plan.begin(), tmp.plan.end(), [p](Gene& g) {
-			return g.type == 0 && g.cid == p.second;
-			});
-		std::swap(c1->cid, c2->cid);
-		tmp.Evaluate();
-		return tmp;
-	}
-
-	Genome RotateRoute(const Genome& genome)
-	{
-		auto tmp = genome;
-		auto x = std::next(tmp.plan.begin(), randint(0, tmp.plan.size() - 1));
-		std::rotate(tmp.plan.begin(), x, tmp.plan.end());
-		auto p = randpair(0, tmp.plan.size() - 1);
-		int m = randint(p.first, p.second);
-		x = std::next(tmp.plan.begin(), p.first);
-		auto y = std::next(x, m - p.first);
-		auto z = std::next(y, p.second - m);
-		std::rotate(x, y, z);
-		tmp.RemoveSpareVehicles();
-		tmp.Evaluate();
-		return tmp;
-	}
-
-	Genome ReverseRoute(const Genome& genome)
-	{
-		auto tmp = genome;
-		auto x = std::next(tmp.plan.begin(), randint(0, tmp.plan.size() - 1));
-		std::rotate(tmp.plan.begin(), x, tmp.plan.end());
-		x = tmp.plan.begin();
-		auto y = std::next(x, randint(1, tmp.plan.size()));
-		std::reverse(x, y);
-		tmp.RemoveSpareVehicles();
-		tmp.Evaluate();
-		return tmp;
 	}
 
 	Population::Population()
