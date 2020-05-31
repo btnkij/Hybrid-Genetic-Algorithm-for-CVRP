@@ -22,7 +22,7 @@ multi-trip
 
 ### Genome Coding
 
-![avatar](./img/coding.jpg)
+![image](./img/coding.jpg)
 
 loop
 
