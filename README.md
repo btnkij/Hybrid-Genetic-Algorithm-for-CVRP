@@ -22,7 +22,7 @@ multi-trip
 
 ### Genome Coding
 
-![image](https://github.com/btnkij/VehicleRouting/raw/img/coding.jpg)
+![image](./img/coding.JPG)
 
 loop
 
@@ -40,7 +40,7 @@ loop
 
 ### Crossover
 
-![avatar](./img/crossover.jpg)
+![avatar](./img/crossover.JPG)
 
 
 
@@ -50,15 +50,15 @@ loop
 
 * Swap
 
-  ![avatar](./img/swap.jpg)
+  ![avatar](./img/swap.JPG)
 
 * Shift
 
-  ![avatar](./img/shift.jpg)
+  ![avatar](./img/shift.JPG)
 
 * Reverse
 
-  ![avatar](./img/reverse.jpg)
+  ![avatar](./img/reverse.JPG)
 
 
 
@@ -66,15 +66,15 @@ loop
 
 * Change
 
-  ![avatar](./img/change.jpg)
+  ![avatar](./img/change.JPG)
 
 * Insert
 
-  ![avatar](./img/insert.jpg)
+  ![avatar](./img/insert.JPG)
 
 * Remove
 
-![avatar](./img/remove.jpg)
+![avatar](./img/remove.JPG)
 
 
 
@@ -94,7 +94,7 @@ local search
 
 ### Migrate
 
-![avatar](./img/migrate.jpg)
+![avatar](./img/migrate.JPG)
 
 migrate 20% elite every 15 generations, select
 
