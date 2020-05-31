@@ -18,11 +18,12 @@ multi-trip
 
 ## Hybrid Genetic Algorithm
 
-[flow chart]
+
 
 ### Genome Coding
 
 ![image](./img/coding.JPG)
+
 
 loop
 
