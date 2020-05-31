@@ -22,7 +22,7 @@ multi-trip
 
 ### Genome Coding
 
-![image](./img/coding.jpg)
+![image](https://github.com/btnkij/VehicleRouting/raw/img/coding.jpg)
 
 loop
 
