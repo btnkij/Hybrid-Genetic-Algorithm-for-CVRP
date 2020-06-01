@@ -9,7 +9,6 @@ add_executable (VehicleRouting
 "${SRC}/ga.h"  
 "${SRC}/ga.cpp" 
 "${SRC}/runner.cpp" 
-"${SRC}/thread_pool.h" 
 "${SRC}/problem.h" 
 "${SRC}/problem.cpp" 
 "${SRC}/util.h"  
