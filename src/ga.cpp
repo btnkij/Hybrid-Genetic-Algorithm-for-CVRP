@@ -164,9 +164,6 @@ namespace VRP
 		return loss;
 	}
 
-	/**
-	* 交叉
-	**/
 	void MicrobeCrossover(Genome& parent, Genome& child)
 	{
 		auto x = std::next(parent.plan.begin(), randint(0, parent.plan.size()));
@@ -359,9 +356,6 @@ namespace VRP
 		}
 	}
 
-	/**
-	* 变异
-	**/
 	Genome MutateRoute(const Genome& genome)
 	{
 		int k = randint(0, 3);
@@ -507,9 +501,9 @@ namespace VRP
 
 	void HGA(int maxiter, const bool verbose)
 	{
-		constexpr int n = 4;
+		constexpr int n = 4; // number of populations
 		constexpr double migrationRate = 0.2;
-		int nMigration = int(Population::popsize * migrationRate);
+		int nMigration = int(Population::popsize * migrationRate); // the number of individuals to migrate
 
 		clock_t startTime, endTime;
 		if (verbose)
@@ -522,7 +516,7 @@ namespace VRP
 		Genome best;
 		best.loss.first = INF;
 		std::unique_ptr<Population[]> pops(new Population[n]);
-		pops[0].population.push_back(CWS());
+		pops[0].population.push_back(CWS()); // CWS constructed individual
 		std::unique_ptr<std::thread[]> threads(new std::thread[n]);
 
 		for (int step = 0; step < maxiter; )
@@ -533,23 +527,8 @@ namespace VRP
 				threads[k] = std::thread([](Population* cur, int nGeneration) {
 
 					srand((unsigned)std::time(nullptr) + (unsigned)cur * 23333U);
-					//std::unordered_map<int, std::list<int> > niche;
-					//int maxn = Population::popsize * Population::maxConcentration;
 					for (int step = 0; step < nGeneration; ++step)
 					{
-						//niche.clear();
-						//for (int i = 0; i < cur->population.size(); i++)
-						//{
-						//	if (randprob() < 0.5)
-						//	{
-						//		niche[cur->population[i].Hash()].push_front(i);
-						//	}
-						//	else
-						//	{
-						//		niche[cur->population[i].Hash()].push_back(i);
-						//	}
-						//}
-
 						for (int i = 0; i < Population::popsize; i++)
 						{
 							if (randprob() > Population::mutationRate)
@@ -567,19 +546,7 @@ namespace VRP
 									cur->population.push_back(MutateVehicle(child));
 								}
 							}
-							//int h = child.Hash();
-							//if (niche[h].size() >= maxn)
-							//{
-							//	int t = niche[h].front();
-							//	niche[h].pop_front();
-							//	cur->population[t] = child;
-							//	niche[h].push_back(t);
-							//}
-							//else
-							//{
-								//niche[h].push_back(cur->population.size());
-								cur->population.push_back(child);
-							//}
+							cur->population.push_back(child);
 						}
 						
 						cur->Select();

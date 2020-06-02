@@ -9,13 +9,17 @@ namespace VRP
 {
 	struct LossMetrics
 	{
-		double dist;
+		double dist; // distance
 		double time;
 		double load, maxLoad;
 		double penalty;
 
 		LossMetrics() :dist(0), time(0), load(0), maxLoad(0), penalty(0) {}
 
+		/// <summary>
+		/// merge the loss of two trips of one vehicle
+		/// </summary>
+		/// <param name="rhs"></param>
 		inline void Update(const LossMetrics& rhs)
 		{
 			dist += rhs.dist;
@@ -24,6 +28,10 @@ namespace VRP
 			penalty += rhs.penalty;
 		}
 
+		/// <summary>
+		/// merge the loss of two journeys of two vehicles
+		/// </summary>
+		/// <param name="rhs"></param>
 		inline void Merge(const LossMetrics& rhs)
 		{
 			dist += rhs.dist;

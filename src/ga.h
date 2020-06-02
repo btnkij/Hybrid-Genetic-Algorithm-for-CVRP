@@ -15,32 +15,45 @@
 
 namespace VRP
 {
+	/// <summary>
+	/// Get the loss of one vehicle in one trip,
+	/// where a trip is a route begins and ends at a depot
+	/// </summary>
+	/// <param name="entry">at which gene the trip begins</param>
+	/// <param name="end">the end iterator of plan</param>
+	/// <param name="veh">the vehicle responsible for this trip</param>
+	/// <param name="verbose">whether to print the detail loss</param>
+	/// <returns></returns>
 	LossMetrics EvaluateTrip(
 		Plan::const_iterator& entry, const Plan::const_iterator& end,
 		const Vehicle& veh, const bool verbose = false);
 
+	/// <summary>
+	/// Get the loss of one vehicle in its journey,
+	/// where a journey is a set of all its trips
+	/// </summary>
+	/// <param name="entry">at which gene the journey begins</param>
+	/// <param name="end">the end iterator of plan</param>
+	/// <param name="verbose">whether to print the detail loss</param>
+	/// <returns></returns>
 	LossMetrics EvaluateJourney(
 		Plan::const_iterator& entry, const Plan::const_iterator& end, 
 		const bool verbose = false);
 
+	/// <summary>
+	/// Get the loss of the whole plan,
+	/// where a plan is a set of all journeys
+	/// </summary>
+	/// <param name="plan"></param>
+	/// <param name="verbose">whether to print the detail loss</param>
+	/// <returns></returns>
 	LossMetrics EvaluatePlan(const Plan& plan, const bool verbose = false);
 
+	/// <summary>
+	/// randomly construct a genome
+	/// </summary>
+	/// <returns></returns>
 	Genome RandomGenome();
-
-	//std::vector<Plan::iterator> GetVehicleIndex(Genome& genome)
-	//{
-	//	genome.FindEntry();
-	//	std::vector<Plan::iterator> vehs;
-	//	for (auto it = genome.plan.begin(); it != genome.plan.end(); ++it)
-	//	{
-	//		if (it->type == VEHICLE)
-	//		{
-	//			vehs.push_back(it);
-	//		}
-	//	}
-	//	vehs.push_back(genome.plan.end());
-	//	return vehs;
-	//}
 
 	void ReinsertRoute(Genome& genome);
 
@@ -60,12 +73,11 @@ namespace VRP
 
 	struct Population
 	{
-		static constexpr int popsize = 100;
+		static constexpr int popsize = 100; // population size
 		static constexpr double eliteRate = 0.5;
 		static constexpr double crossoverRate = 0.6;
 		static constexpr double mutationRate = 0.05;
 		static constexpr double finetuneRate = 0.1;
-		//static constexpr double maxConcentration = 0.07;
 
 		Genome bestIndiv;
 		std::vector<Genome> population;
@@ -75,5 +87,10 @@ namespace VRP
 		const Genome& BestIndiv()const;
 	};
 
+	/// <summary>
+	/// The entry of Hybrid Genetic Algorithm
+	/// </summary>
+	/// <param name="maxiter"></param>
+	/// <param name="verbose">whether to print the optimizing process</param>
 	void HGA(int maxiter, const bool verbose = false);
 }

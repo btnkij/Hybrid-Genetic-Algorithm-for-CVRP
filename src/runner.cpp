@@ -6,7 +6,7 @@
 #include "ga.h"
 
 
-int npop, popsize, maxiter;
+int maxiter;
 void init()
 {
 #ifdef _DEBUG
@@ -19,6 +19,7 @@ void init()
 	std::ios::sync_with_stdio(false);
 	cin.tie(nullptr);
 
+	// customer nodes
 	cin >> problem.nCustomer;
 	problem.customers.reserve(problem.nCustomer);
 	for (int i = 0; i < problem.nCustomer; i++)
@@ -32,6 +33,7 @@ void init()
 		problem.customers.push_back(customer);
 	}
 
+	// depot nodes
 	cin >> problem.nDepot;
 	for (int i = problem.nCustomer; i < problem.nCustomer + problem.nDepot; i++)
 	{
@@ -41,6 +43,7 @@ void init()
 		problem.nodeID[MAXN + id] = i;
 	}
 
+	// other nodes
 	cin >> problem.nOther;
 	for (
 		int i = problem.nCustomer + problem.nDepot;
@@ -61,13 +64,14 @@ void init()
 		problem.dis[i][i] = 0;
 	}
 
+	// edges
 	int nEdge;
 	cin >> nEdge;
 	for (int i = 0; i < nEdge; i++)
 	{
 		int u, v;
 		double w;
-		cin >> u >> v >> w; // 连接u、v长度为w的双向道路
+		cin >> u >> v >> w;
 		if (w < problem.dis[problem.nodeID[MAXN + u]][problem.nodeID[MAXN + v]])
 		{
 			problem.dis[problem.nodeID[MAXN + u]][problem.nodeID[MAXN + v]]
@@ -76,7 +80,8 @@ void init()
 	}
 	problem.floyd();
 
-	cin >> problem.nVehicle; // 货车数量
+	// vehicles
+	cin >> problem.nVehicle;
 	cin >> Vehicle::speed >> Vehicle::workTime;
 	problem.vehicles.reserve(problem.nVehicle);
 	for (int i = 0; i < problem.nVehicle; i++)
@@ -91,9 +96,10 @@ void init()
 		problem.vehicles.push_back(veh);
 	}
 
-	cin >> problem.distancePrior >> problem.timePrior >> problem.loadPrior; // 路程加权、用时加权、满载率加权
+	// the priority of distance, time, and load factor
+	cin >> problem.distancePrior >> problem.timePrior >> problem.loadPrior;
 
-	cin >> npop >> popsize >> maxiter; // 种群数量、种群大小、迭代次数
+	cin >> maxiter; // max iterations
 }
 
 int main()

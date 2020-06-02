@@ -28,6 +28,7 @@ namespace VRP
 				int vtype; // type number of the vehicle
 			};
 		};
+
 		static Gene CustomerGene(int cid)
 		{
 			Gene g;
@@ -35,6 +36,7 @@ namespace VRP
 			g.cid = cid;
 			return g;
 		}
+
 		static Gene VehicleGene(int vtype)
 		{
 			Gene g;
@@ -60,6 +62,9 @@ namespace VRP
 			return loss > rhs.loss;
 		}
 
+		/// <summary>
+		/// rotate the chromosome so that it begins with a vehicle gene
+		/// </summary>
 		inline void FindEntry()
 		{
 			if (plan.begin()->type == 1)
@@ -73,6 +78,9 @@ namespace VRP
 			std::rotate(plan.begin(), entry, plan.end());
 		}
 
+		/// <summary>
+		/// remove the vehicles that have no customer to serve
+		/// </summary>
 		inline void RemoveSpareVehicles()
 		{
 			for (auto it = plan.begin(); it != plan.end(); )
@@ -98,19 +106,26 @@ namespace VRP
 			}
 		}
 
-		inline int Hash()const
-		{
-			if (loss.first > EPS)
-				return -(int)(loss.second * 10 + 0.5);
-			else
-				return (int)(loss.second * 10 + 0.5);
-		}
-
+		/// <summary>
+		/// Evaluate `plan` and fill the field `loss`.
+		/// </summary>
 		void Evaluate();
+
+		/// <summary>
+		/// The crossover operator in MGA.
+		/// Child, who has greater loss, will be replaced by the crossover of parent and original child
+		/// It did not outperform normal crossover in experiment
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="child"></param>
 		friend void MicrobeCrossover(Genome& parent, Genome& child);
+
 		friend Genome Crossover(const Genome& parent1, const Genome& parent2);
+
 		friend Genome MutateRoute(const Genome& genome);
+
 		friend Genome MutateVehicle(const Genome& genome);
+
 		friend void Finetune(Genome& genome);
 	};
 }
