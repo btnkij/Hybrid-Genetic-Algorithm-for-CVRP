@@ -15,4 +15,4 @@ add_executable (VehicleRouting
 "${SRC}/cws.h" 
 "${SRC}/loss_metrics.h" 
 "${SRC}/genetic_coding.h" 
-"${SRC}/cws.cpp")
+"${SRC}/cws.cpp" "src/monitor.h" "src/monitor.cpp")

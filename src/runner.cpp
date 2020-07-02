@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <string>
 
 #include "problem.h"
 #include "cws.h"
@@ -86,10 +87,10 @@ void init()
 	problem.vehicles.reserve(problem.nVehicle);
 	for (int i = 0; i < problem.nVehicle; i++)
 	{
-		int id;
+		std::string id;
 		cin >> id;
 		problem.vehicleID[i] = id;
-		problem.vehicleID[MAXN + id] = i;
+		//problem.vehicleID[MAXN + id] = i;
 		Vehicle veh;
 		cin >> veh.depot >> veh.maxLoad >> veh.maxMileage >> veh.count;
 		veh.depot = problem.nodeID[MAXN + veh.depot];
@@ -99,7 +100,8 @@ void init()
 	// the priority of distance, time, and load factor
 	cin >> problem.distancePrior >> problem.timePrior >> problem.loadPrior;
 
-	cin >> maxiter; // max iterations
+	int npop, popsize;
+	cin >> npop >> popsize >> maxiter; // max iterations
 }
 
 int main()

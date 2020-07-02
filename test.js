@@ -1,28 +1,12 @@
 "use strict";
 
 const { spawn } = require('child_process');
-const os = require('os');
-
-function onMessageReceived(data) {
-	// console.log('msg');
-	// console.log(data);
-}
-
-function onFinReceived(data) {
-	// console.log('fin');
-	// console.log(data);
-}
-
-function onSolReceived(data) {
-	// console.log('sol');
-	console.log(data);
-}
 
 function solve(
 	problem,			// VRP问题描述
-	npop=4,				// 种群数量，无效参数，做兼容性保留
-	popsize=100,		// 种群大小，无效参数，做兼容性保留
-	maxiter=200,		// 迭代次数
+	npop=2,
+	popsize=100,		// 种群大小
+	maxiter=40,			// 迭代次数
 ) {
 	var solver = spawn("D:\\Application\\cpp\\VehicleRouting\\out\\build\\x64-Release\\VehicleRouting.exe");
 	var pipe = (...msg) => {
@@ -125,31 +109,15 @@ function solve(
 	pipe(npop, popsize, maxiter);
 
 	var out = '';
+
 	solver.stdout.on('data', (buffer) => {
-		out += buffer.toString();
-		while (true) {
-			let eol = out.indexOf(os.EOL);
-			if (eol == -1) {
-				break;
-			}
-			let data = out.substr(0, eol);
-			let [flag, payload] = data.split(' ');
-			// payload = eval('(' + payload + ')');
-			switch(flag) {
-			case 'msg':
-				onMessageReceived(payload);
-				break;
-			case 'fin':
-				onFinReceived(payload);
-				break;
-			case 'sol':
-				onSolReceived(payload);
-				break;
-			default:
-				throw 'unknown flag';
-			}			
-			out = out.substr(eol + os.EOL.length);
-		}
+		// out += buffer.toString();
+		console.log(buffer.toString());
+	});
+
+	solver.on('exit', () => {
+		// console.log(out);
+		// var solution = eval('(' + out + ')');
 	});
 }
 
@@ -283,214 +251,27 @@ function load_cvrp(path) {
 
 function main() {
 	// var problem = load_test();
-	// var problem = load_cvrp("D:/Application/cpp/VehicleRouting/benchmark/A-n33-k5.vrp")
-	let problem = {
-	"routeMode": false,
-	"nodes": [{
-		"type": "depot",
-		"id": 1,
-		"demand": 0,
-		"x": 82,
-		"y": 76
-	}, {
-		"type": "customer",
-		"id": 2,
-		"demand": 19,
-		"x": 96,
-		"y": 44
-	}, {
-		"type": "customer",
-		"id": 3,
-		"demand": 21,
-		"x": 50,
-		"y": 5
-	}, {
-		"type": "customer",
-		"id": 4,
-		"demand": 6,
-		"x": 49,
-		"y": 8
-	}, {
-		"type": "customer",
-		"id": 5,
-		"demand": 19,
-		"x": 13,
-		"y": 7
-	}, {
-		"type": "customer",
-		"id": 6,
-		"demand": 7,
-		"x": 29,
-		"y": 89
-	}, {
-		"type": "customer",
-		"id": 7,
-		"demand": 12,
-		"x": 58,
-		"y": 30
-	}, {
-		"type": "customer",
-		"id": 8,
-		"demand": 16,
-		"x": 84,
-		"y": 39
-	}, {
-		"type": "customer",
-		"id": 9,
-		"demand": 6,
-		"x": 14,
-		"y": 24
-	}, {
-		"type": "customer",
-		"id": 10,
-		"demand": 16,
-		"x": 2,
-		"y": 39
-	}, {
-		"type": "customer",
-		"id": 11,
-		"demand": 8,
-		"x": 3,
-		"y": 82
-	}, {
-		"type": "customer",
-		"id": 12,
-		"demand": 14,
-		"x": 5,
-		"y": 10
-	}, {
-		"type": "customer",
-		"id": 13,
-		"demand": 21,
-		"x": 98,
-		"y": 52
-	}, {
-		"type": "customer",
-		"id": 14,
-		"demand": 16,
-		"x": 84,
-		"y": 25
-	}, {
-		"type": "customer",
-		"id": 15,
-		"demand": 3,
-		"x": 61,
-		"y": 59
-	}, {
-		"type": "customer",
-		"id": 16,
-		"demand": 22,
-		"x": 1,
-		"y": 65
-	}, {
-		"type": "customer",
-		"id": 17,
-		"demand": 18,
-		"x": 88,
-		"y": 51
-	}, {
-		"type": "customer",
-		"id": 18,
-		"demand": 19,
-		"x": 91,
-		"y": 2
-	}, {
-		"type": "customer",
-		"id": 19,
-		"demand": 1,
-		"x": 19,
-		"y": 32
-	}, {
-		"type": "customer",
-		"id": 20,
-		"demand": 24,
-		"x": 93,
-		"y": 3
-	}, {
-		"type": "customer",
-		"id": 21,
-		"demand": 8,
-		"x": 50,
-		"y": 93
-	}, {
-		"type": "customer",
-		"id": 22,
-		"demand": 12,
-		"x": 98,
-		"y": 14
-	}, {
-		"type": "customer",
-		"id": 23,
-		"demand": 4,
-		"x": 5,
-		"y": 42
-	}, {
-		"type": "customer",
-		"id": 24,
-		"demand": 8,
-		"x": 42,
-		"y": 9
-	}, {
-		"type": "customer",
-		"id": 25,
-		"demand": 24,
-		"x": 61,
-		"y": 62
-	}, {
-		"type": "customer",
-		"id": 26,
-		"demand": 24,
-		"x": 9,
-		"y": 97
-	}, {
-		"type": "customer",
-		"id": 27,
-		"demand": 2,
-		"x": 80,
-		"y": 55
-	}, {
-		"type": "customer",
-		"id": 28,
-		"demand": 20,
-		"x": 57,
-		"y": 69
-	}, {
-		"type": "customer",
-		"id": 29,
-		"demand": 15,
-		"x": 23,
-		"y": 15
-	}, {
-		"type": "customer",
-		"id": 30,
-		"demand": 2,
-		"x": 20,
-		"y": 70
-	}, {
-		"type": "customer",
-		"id": 31,
-		"demand": 14,
-		"x": 85,
-		"y": 60
-	}, {
-		"type": "customer",
-		"id": 32,
-		"demand": 9,
-		"x": 98,
-		"y": 5
-	}],
-	"edges": "euc2d",
-	"vehicles": [{
-		"id": "东风",
-		"depot": 1,
-		"load": 100
-	}],
-	"distancePrior": 5,
-	"timePrior": 1,
-	"loadPrior": 4,
-	"speed": 10,
-	"maxiter": 200
-};
+	var problem = load_cvrp("D:\\wkdir\\vrp\\benchmark\\M\\M-n200-k16.vrp");
+	// var problem = {
+	// 	"nodes":[
+	// 		{"id":3, "type":"depot"},
+	// 		{"id":5, "type":"customer", "demand":5},
+	// 		{"id":4, "type":"customer", "demand":4},
+	// 	],
+	// 	"edges":[
+	// 		{"u":3,"v":4,"w":2},
+	// 		{"u":3,"v":5,"w":3},
+	// 		{"u":5,"v":4,"w":1},
+	// 	],
+	// 	"speed":1,
+	// 	"vehicles":[
+	// 		{"id":11,"load":5,"mileage":10,"count":1},
+	// 		{"id":12,"load":4,"mileage":10,"count":1},
+	// 	],
+	// 	"distancePrior": 0,
+	// 	"timePrior": 0,
+	// 	"loadPrior": 1
+	// };
 	solve(problem, -1, -1, 200);
 }
 

@@ -73,12 +73,6 @@ namespace VRP
 
 	struct Population
 	{
-		static constexpr int popsize = 100; // population size
-		static constexpr double eliteRate = 0.5;
-		static constexpr double crossoverRate = 0.6;
-		static constexpr double mutationRate = 0.05;
-		static constexpr double finetuneRate = 0.1;
-
 		Genome bestIndiv;
 		std::vector<Genome> population;
 
