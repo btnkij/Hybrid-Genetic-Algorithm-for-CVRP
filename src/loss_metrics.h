@@ -12,19 +12,9 @@ namespace VRP
 		double dist; // distance
 		double time;
 		double load, maxLoad;
-		double penalty, cost;
+		double penalty;
 
 		LossMetrics() :dist(0), time(0), load(0), maxLoad(0), penalty(0) {}
-
-		bool operator<(const LossMetrics& rhs)const
-		{
-			return penalty < rhs.penalty || (penalty == rhs.penalty && cost < rhs.cost);
-		}
-
-		bool operator>(const LossMetrics& rhs)const
-		{
-			return penalty > rhs.penalty || (penalty == rhs.penalty && cost > rhs.cost);
-		}
 
 		/// <summary>
 		/// merge the loss of two trips of one vehicle
@@ -55,14 +45,14 @@ namespace VRP
 			return load / maxLoad;
 		}
 
-		double Sum(int nVeh)
+		std::pair<double, double> Result(int nVeh)
 		{
 			double norms = this->dist / Vehicle::speed;
 			double normt = this->time * nVeh;
 			double norml = (1. - this->LoadFactor()) * nVeh;
 			if (Vehicle::workTime > 0)norml *= Vehicle::workTime;
 			double gcost = norms * problem.distancePrior + normt * problem.timePrior + norml * problem.loadPrior;
-			return cost = gcost;
+			return std::make_pair(this->penalty, gcost);
 		}
 	};
 }

@@ -52,7 +52,7 @@ namespace VRP
 	{
 		Plan plan; // describe the whole routing plan
 		std::vector<int> num; // the number of vehicles used in each type
-		LossMetrics loss;
+		std::pair<double, double> loss; // {penalty, weighted cost}
 		bool operator<(const Genome& rhs)const
 		{
 			return loss < rhs.loss;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <limits>
-#include <string>
 #include <array>
 #include <vector>
 #include <unordered_map>
@@ -12,15 +11,6 @@ namespace VRP
 	static constexpr double EPS = 1e-8;
 	static constexpr double INF = std::numeric_limits<double>::max() / 4.;
 	static constexpr int MAXN = 500; // the maximum number of nodes the graph can contain
-
-	// hyperparameters
-	static constexpr int POPSIZE = 100; // population size
-	static constexpr double ELITE_RATE = 0.5;
-	static constexpr double CROSSOVER_RATE = 0.6;
-	static constexpr double MUTATION_RATE = 0.05;
-	static constexpr double FINETUNE_RATE = 0.1;
-	static constexpr double MIGRATION_RATE = 0.2;
-	static constexpr int MIGRATION_STEP = 15;
 
 	struct Vehicle
 	{
@@ -49,7 +39,7 @@ namespace VRP
 		std::vector<Vehicle> vehicles;
 		std::vector<Customer> customers;
 		std::unordered_map<int, int> nodeID;
-		std::unordered_map<int, std::string> vehicleID;
+		std::unordered_map<int, int> vehicleID;
 		double distancePrior;	// priority of distance
 		double loadPrior;		// priority of load factor
 		double timePrior;		// priority of time consumption

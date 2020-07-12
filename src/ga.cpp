@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <numeric>
 #include <thread>
-#include <list>
 #include <unordered_set>
 
 #include "problem.h"
@@ -16,7 +15,6 @@
 #include "genetic_coding.h"
 #include "cws.h"
 #include "util.h"
-#include "monitor.h"
 
 
 namespace VRP
@@ -105,7 +103,7 @@ namespace VRP
 		if (verbose)
 		{
 			std::cout << "{"
-				<< R"("vid":")" << problem.vehicleID[entry->vtype] << "\""
+				<< R"("vid":)" << problem.vehicleID[entry->vtype]
 				<< R"(,"trips":[)";
 		}
 		LossMetrics loss;
@@ -437,8 +435,8 @@ namespace VRP
 	inline void Genome::Evaluate()
 	{
 		FindEntry();
-		this->loss = EvaluatePlan(plan);
-		this->loss.Sum(std::accumulate(num.begin(), num.end(), 0));
+		auto loss = EvaluatePlan(plan);
+		this->loss = loss.Result(std::accumulate(num.begin(), num.end(), 0));
 	}
 
 	Genome RandomGenome()
@@ -471,8 +469,8 @@ namespace VRP
 
 	Population::Population()
 	{
-		population.reserve(POPSIZE * 4);
-		for (int i = 0; i < POPSIZE; i++)
+		population.reserve(popsize * 4);
+		for (int i = 0; i < popsize; i++)
 		{
 			population.push_back(RandomGenome());
 		}
@@ -481,13 +479,13 @@ namespace VRP
 
 	void Population::Select()
 	{
-		int nElite = int(POPSIZE * ELITE_RATE);
+		int nElite = int(popsize * eliteRate);
 		auto mid = population.begin() + nElite;
-		auto end = population.begin() + POPSIZE;
+		auto end = population.begin() + popsize;
 		std::nth_element(population.begin(), mid, population.end());
-		for (int i = int(population.size() - 1); i >= POPSIZE; i--)
+		for (int i = int(population.size() - 1); i >= popsize; i--)
 		{
-			int j = randint(nElite, POPSIZE);
+			int j = randint(nElite, popsize);
 			if (population[i] < population[j] || randprob() < 0.2)
 			{
 				population[j] = population[i];
@@ -503,45 +501,47 @@ namespace VRP
 
 	void HGA(int maxiter, const bool verbose)
 	{
-		constexpr int N = 4; // number of populations
-		int nMigration = int(POPSIZE * MIGRATION_RATE); // the number of individuals to migrate
-
-		auto monitor = std::make_shared<Monitor>();
+		constexpr int n = 4; // number of populations
+		constexpr double migrationRate = 0.2;
+		int nMigration = int(Population::popsize * migrationRate); // the number of individuals to migrate
 
 		clock_t startTime, endTime;
-		startTime = clock();
+		if (verbose)
+		{
+			std::cout << "begin optimizing" << "\n\n";
+			startTime = clock();
+		}
 		
 		srand(std::time(nullptr));
-
-		Genome best = CWS();
-		monitor->Update(0, best.loss);
-		std::unique_ptr<Population[]> pops(new Population[N]);
-		pops[0].population.push_back(best); // CWS constructed individual
-		std::unique_ptr<std::thread[]> threads(new std::thread[N]);
+		Genome best;
+		best.loss.first = INF;
+		std::unique_ptr<Population[]> pops(new Population[n]);
+		pops[0].population.push_back(CWS()); // CWS constructed individual
+		std::unique_ptr<std::thread[]> threads(new std::thread[n]);
 
 		for (int step = 0; step < maxiter; )
 		{
 			int stepsize = std::min(15, maxiter - step);
-			for (int k = 0; k < N; k++)
+			for (int k = 0; k < n; k++)
 			{
 				threads[k] = std::thread([](Population* cur, int nGeneration) {
 
 					srand((unsigned)std::time(nullptr) + (unsigned)cur * 23333U);
 					for (int step = 0; step < nGeneration; ++step)
 					{
-						for (int i = 0; i < POPSIZE; i++)
+						for (int i = 0; i < Population::popsize; i++)
 						{
-							if (randprob() > MUTATION_RATE)
+							if (randprob() > Population::mutationRate)
 								continue;
-							int j = randint(0, POPSIZE - 1);
+							int j = randint(0, Population::popsize - 1);
 							auto child = Crossover(cur->population[i], cur->population[j]);
-							while (randprob() < MUTATION_RATE)
+							while (randprob() < Population::mutationRate)
 							{
 								cur->population.push_back(MutateRoute(child));
 							}
 							if (child.plan.size() - problem.nCustomer > 1)
 							{
-								while (randprob() < MUTATION_RATE)
+								while (randprob() < Population::mutationRate)
 								{
 									cur->population.push_back(MutateVehicle(child));
 								}
@@ -551,9 +551,9 @@ namespace VRP
 						
 						cur->Select();
 
-						for (int i = 0; i < POPSIZE; i++)
+						for (int i = 0; i < Population::popsize; i++)
 						{
-							if (randprob() < FINETUNE_RATE)
+							if (randprob() < Population::finetuneRate)
 							{
 								Finetune(cur->population[i]);
 							}
@@ -563,7 +563,7 @@ namespace VRP
 					}, &pops[k], stepsize);
 			}
 			step += stepsize;
-			for (int k = 0; k < N; k++)
+			for (int k = 0; k < n; k++)
 			{
 				threads[k].join();
 			}
@@ -571,18 +571,18 @@ namespace VRP
 			// migrate
 			if (step % 15 == 0)
 			{
-				for (int i = 0; i < N; i++)
+				for (int i = 0; i < n; i++)
 				{
 					auto& x = pops[i].population;
 					auto midx = x.begin() + nMigration;
 					std::nth_element(x.begin(), midx, x.end());
 					int j = 0;
-					if (j >= 2)j = randint(2, N - 2);
+					if (j >= 2)j = randint(2, n - 2);
 					if (j >= i)j++;
 					auto& y = pops[j].population;
 					y.insert(y.end(), x.begin(), midx);
 				}
-				for (int i = 2; i < N; i++)
+				for (int i = 2; i < n; i++)
 				{
 					pops[i].Select();
 					int j = i % 2;
@@ -596,30 +596,26 @@ namespace VRP
 			}
 
 			// update solution
-			LossMetrics tmp;
-			tmp.penalty = INF;
-			for (int k = 0; k < N; k++)
+			for (int k = 0; k < n; k++)
 			{
 				auto cur = &pops[k];
 				cur->bestIndiv = *std::min_element(cur->population.begin(), cur->population.end());
-				tmp = std::min(tmp, cur->bestIndiv.loss);
 			}
-			monitor->Update(step, tmp);
 
-			//if (verbose)
-			//{
-			//	std::cout << "step " << step << ":\n";
-			//	for (int i = 0; i < N; i++)
-			//	{
-			//		std::cout << "pop#" << i << ": "
-			//			<< "penalty=" << pops[i].BestIndiv().loss.penalty
-			//			<< ", cost=" << pops[i].BestIndiv().loss.cost
-			//			<< "\n";
-			//	}
-			//}
+			if (verbose)
+			{
+				std::cout << "step " << step << ":\n";
+				for (int i = 0; i < n; i++)
+				{
+					std::cout << "pop#" << i << ": "
+						<< "penalty=" << pops[i].BestIndiv().loss.first
+						<< ", cost=" << pops[i].BestIndiv().loss.second
+						<< "\n";
+				}
+			}
 		}
 
-		for (int i = 0; i < N; i++)
+		for (int i = 0; i < n; i++)
 		{
 			if (pops[i].BestIndiv() < best)
 			{
@@ -627,12 +623,14 @@ namespace VRP
 			}
 		}
 		
-		endTime = clock();
-		double runTime = (double(endTime) - startTime) / CLOCKS_PER_SEC;
-		std::cout << "fin " << runTime << std::endl;
+		if (verbose)
+		{
+			endTime = clock();
+			double runTime = (double(endTime) - startTime) / CLOCKS_PER_SEC;
+			std::cout << "\ntime consumption: " << runTime << " sec\n" << std::endl;
+		}
 
 		best.FindEntry();
-		std::cout << "sol ";
 		EvaluatePlan(best.plan, true);
 	}
 }
