@@ -34,6 +34,8 @@ and our goal is to minimize the loss function.
 
 As the scale of distance, time and load factor is different, some tricks are applied to normalize them.
 
+We use std::pair<double, double> to denote the loss of a chromosome, where the first number is penalty for violate the constaints and the second the value of loss function.
+
 ### Initialization
 
 ![population](./img/population.JPG)
@@ -103,7 +105,9 @@ Migration is applied every **MIGRATION_STEP** generations. The migration between
 
 ### Interface
 
-#### Input
+We use STDIO for input and output. However, a simpler interface is also provided in **test.js**.
+
+Input format is shown below.
 
 ```
 <num_of_customer>
@@ -119,40 +123,152 @@ Migration is applied every **MIGRATION_STEP** generations. The migration between
 <point1> <point2> <distance>
 ...
 <num_of_vehicle>
+<speed> <work_time>
 <vehicle_type_id> <depot> <capacity> <mileage> <count>
 ...
 <distancePrior> <timePrior> <loadPrior>
 <max_iter>
 ```
 
-| Keyword         | Comments                                      |
-| --------------- | --------------------------------------------- |
-| num_of_customer | the number of customers                       |
-| num_of_depot    | the number of depots                          |
-| num_of_other    | the number of irrelevant nodes                |
-| node_id         | node ID                                       |
-| demand          | demand                                        |
-| service_time    | the time for unloading goods                  |
-| tw_beg          | the beginning of time window                  |
-| tw_end          | the ending of time window                     |
-| num_of_edge     | the number of undirected edges                |
-| point1 point2   | two nodes that connected by the edge          |
-| distance        | the length of the edge                        |
-| num_of_vehicle  | the number of vehicles                        |
-| vehicle_type_id | vehicle type ID                               |
-| depot           | the depot that the vehicle is to and from     |
-| capacity        | how many goods this type of vehicle can carry |
-| mileage         | how long the vehicle can travel               |
-| count           | how many vehicles can be used                 |
-| distancePrior   | the weight of distance                        |
-| timePrior       | the weight of time                            |
-| loadPrior       | the weight of load factor                     |
-| max_iter        | the number of steps should be run             |
+| Keyword         | Comments                                        |
+| --------------- | ----------------------------------------------- |
+| num_of_customer | the number of customers                         |
+| num_of_depot    | the number of depots                            |
+| num_of_other    | the number of irrelevant nodes                  |
+| node_id         | node ID                                         |
+| demand          | demand                                          |
+| service_time    | the time for unloading goods (hour)             |
+| tw_beg          | the beginning of time window, -1 for don't care |
+| tw_end          | the ending of time window, -1 for don't care    |
+| num_of_edge     | the number of undirected edges                  |
+| point1 point2   | two nodes that connected by the edge            |
+| distance        | the length of the edge                          |
+| num_of_vehicle  | the number of vehicles                          |
+| speed           | the speed of all vehicles                       |
+| work_time       | the maximum work time of all vehicles           |
+| vehicle_type_id | vehicle type ID                                 |
+| depot           | the depot that the vehicle is to and from       |
+| capacity        | how many goods this type of vehicle can carry   |
+| mileage         | how long the vehicle can travel                 |
+| count           | how many vehicles can be used, -1 for unlimited |
+| distancePrior   | the weight of distance                          |
+| timePrior       | the weight of time                              |
+| loadPrior       | the weight of load factor                       |
+| max_iter        | the number of steps should be run               |
 
-#### Output
+For example, if you want to solve a problem described as:
+
+1. A undirected graph shown below, where P is the depot and A-I are customers, and a untitled irrelevant node. Numbers shown in bracket denote the demand. Numbers on the edge are edge length. The service time of all customers is 5min.
+
+   ![img](./img/input_example.png)
+
+2. You have two types of unlimited vehicles with capacity 2 and 5. All vehicles travel with speed 10 and work 8 hours a day.
+
+3. You want to minimize the distance with 200 iterations.
+
+The input should be
 
 ```
+9
+1 1.7 0.083 -1 -1
+2 0.8 0.083 -1 -1
+3 1.3 0.083 -1 -1
+4 2.8 0.083 -1 -1
+5 1.9 0.083 -1 -1
+6 3.5 0.083 -1 -1
+7 0.9 0.083 -1 -1
+8 0.3 0.083 -1 -1
+9 1.2 0.083 -1 -1
+1
+0
+1
+10
+22
+0 1 5
+0 2 8
+0 3 7
+0 10 5
+0 5 4
+0 6 12
+0 7 9
+0 8 12
+0 9 6
+1 2 4
+1 9 3
+2 3 3
+3 4 4
+3 10 5
+4 5 3
+4 10 2
+5 6 10
+5 10 2
+6 7 4
+6 8 7
+7 8 5
+8 9 9
+2
+10 8
+1 0 2 35 -1
+2 0 5 35 -1
+1 0 0
+200
+```
 
+And you have a decent chance to get the optimum solution in JSON format.
+
+```json
+{
+  "plan": [
+    {
+      "vid": 2, // vehicle type ID
+      "trips": [ // a vehicle can run multiple trips
+        {
+          "serve": [4, 5], // the customers should be served
+          "route": [0, 5, 4, 5, 0], // the route
+          "distance": 14, // distance of this trip
+          "time": 1.56667, // time of this trip
+          "load": 4.7 // total demand of this trip
+        }
+      ],
+      "distance": 14, // distance of the whole trips
+      "time": 1.56667, // time of the whole trips (hour)
+      "loadFactor": 0.94 // load factor of the whole trips
+    },
+    {
+      "vid": 2,
+      "trips": [
+        {
+          "serve": [8, 6, 7],
+          "route": [0, 8, 6, 7, 0],
+          "distance": 32,
+          "time": 3.45,
+          "load": 4.7
+        }
+      ],
+      "distance": 32,
+      "time": 3.45,
+      "loadFactor": 0.94
+    },
+    {
+      "vid": 2,
+      "trips": [
+        {
+          "serve": [3, 2, 1, 9],
+          "route": [0, 3, 2, 1, 9, 0],
+          "distance": 23,
+          "time": 2.63333,
+          "load": 5
+        }
+      ],
+      "distance": 23,
+      "time": 2.63333,
+      "loadFactor": 1
+    }
+  ],
+  "distance": 69, // distance of the whole plan
+  "time": 3.45, // time of the whole plan
+  "loadFactor": 0.96 // load factor of the whole plan
+}
 ```
 
 ### Hyperparameter

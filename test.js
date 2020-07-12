@@ -1,14 +1,14 @@
 "use strict";
 
 const { spawn } = require('child_process');
+const os = require('os');
 
-function solve(
-	problem,			// VRP问题描述
-	npop=2,
-	popsize=100,		// 种群大小
-	maxiter=40,			// 迭代次数
-) {
-	var solver = spawn("D:\\Application\\cpp\\VehicleRouting\\out\\build\\x64-Release\\VehicleRouting.exe");
+function onSolReceived(data) {
+	console.log(data);
+}
+
+function solve(problem, maxiter=200) {
+	var solver = spawn("./out/build/x64-Release/VehicleRouting.exe");
 	var pipe = (...msg) => {
 		solver.stdin.write(msg.join(' ') + '\n');
 		// console.log(msg.join(' '));
@@ -106,17 +106,14 @@ function solve(
 	}
 
 	pipe(problem.distancePrior, problem.timePrior, problem.loadPrior);
-	pipe(npop, popsize, maxiter);
+	pipe(maxiter);
 
 	var out = '';
-
 	solver.stdout.on('data', (buffer) => {
 		out += buffer.toString();
 	});
-
-	solver.on('exit', () => {
+	solver.stdout.on('close', () => {
 		console.log(out);
-		var solution = eval('(' + out + ')');
 	});
 }
 
@@ -165,9 +162,9 @@ function load_test() {
 			{"id": 1, "depot": 0, "load": 2, "mileage": 35},
 			{"id": 2, "depot": 0, "load": 5, "mileage": 35},
 		],
-		"distancePrior": 5,
-		"timePrior": 1,
-		"loadPrior": 4
+		"distancePrior": 1,
+		"timePrior": 0,
+		"loadPrior": 0
 	}
 	return problem;
 }
@@ -249,29 +246,9 @@ function load_cvrp(path) {
 }
 
 function main() {
-	// var problem = load_test();
-	var problem = load_cvrp("D:\\wkdir\\vrp\\benchmark\\M\\M-n200-k16.vrp");
-	// var problem = {
-	// 	"nodes":[
-	// 		{"id":3, "type":"depot"},
-	// 		{"id":5, "type":"customer", "demand":5},
-	// 		{"id":4, "type":"customer", "demand":4},
-	// 	],
-	// 	"edges":[
-	// 		{"u":3,"v":4,"w":2},
-	// 		{"u":3,"v":5,"w":3},
-	// 		{"u":5,"v":4,"w":1},
-	// 	],
-	// 	"speed":1,
-	// 	"vehicles":[
-	// 		{"id":11,"load":5,"mileage":10,"count":1},
-	// 		{"id":12,"load":4,"mileage":10,"count":1},
-	// 	],
-	// 	"distancePrior": 0,
-	// 	"timePrior": 0,
-	// 	"loadPrior": 1
-	// };
-	solve(problem, -1, -1, 200);
+	var problem = load_test();
+	// var problem = load_cvrp("./benchmark/A-n33-k5.vrp")
+	solve(problem, 200);
 }
 
 main();
